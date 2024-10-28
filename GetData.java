@@ -66,29 +66,13 @@ public class GetData {
                 dude.put("MOB", mob);
                 dude.put("DOB", dob);
 
-                Statement stmt2 = oracleConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-                ResultSet rst2 = stmt2.executeQuery(
-                    "SELECT c.city_name, c.state_name, c.country_name " +
-                    "FROM " + cityTableName +  " c " + 
-                    "JOIN " + currentCityTableName +  " c1 ON c1.current_city_id = c.city_id " +
-                    "JOIN " + userTableName + " u ON u.user_id = " + userId
-                );
-                
-                JSONObject currCity = new JSONObject();
-                
-                if(rst2.next()){
-                    currCity.put("country", rst2.getString(3));
-                    currCity.put("city", rst2.getString(1));
-                    currCity.put("state", rst2.getString(2));
-                }
-                dude.put("current", currCity);
 
                 Statement stmt3 = oracleConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
                 ResultSet rst3 = stmt3.executeQuery(
                     "SELECT c.city_name, c.state_name, c.country_name " +
                     "FROM " + cityTableName +  " c " + 
                     "JOIN " + hometownCityTableName +  " c1 ON c1.hometown_city_id = c.city_id " +
-                    "JOIN " + userTableName + " u ON u.user_id = " + userId
+                    "JOIN " + userTableName + " u ON u.user_id = " + userId + " AND u.user_id = c1.user_id"
                 );
                 JSONObject hometown = new JSONObject();
                 if(rst3.next()){
@@ -99,6 +83,24 @@ public class GetData {
                 }
                 dude.put("hometown", hometown);
 
+                Statement stmt2 = oracleConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                        ResultSet.CONCUR_READ_ONLY);
+                ResultSet rst2 = stmt2.executeQuery(
+                        "SELECT c.city_name, c.state_name, c.country_name " +
+                                "FROM " + cityTableName + " c " +
+                                "JOIN " + currentCityTableName + " c1 ON c1.current_city_id = c.city_id " +
+                                "JOIN " + userTableName + " u ON u.user_id = " + userId
+                                + " AND u.user_id = c1.user_id");
+
+                JSONObject currCity = new JSONObject();
+
+                if (rst2.next()) {
+                    currCity.put("country", rst2.getString(3));
+                    currCity.put("city", rst2.getString(1));
+                    currCity.put("state", rst2.getString(2));
+                }
+                dude.put("current", currCity);
+
                 Statement stmt4 = oracleConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
                 ResultSet rst4 = stmt4.executeQuery(
                     "SELECT f1.user2_id " +
@@ -106,7 +108,7 @@ public class GetData {
                     "WHERE  f1.user1_id = " + userId + " " +
                     "AND f1.user2_id > " + userId
                 );
-                
+
                 JSONArray friends = new JSONArray();
                 while(rst4.next()){
                     friends.put(rst4.getInt(1));
