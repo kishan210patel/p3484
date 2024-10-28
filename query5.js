@@ -11,6 +11,24 @@ function oldest_friend(dbname) {
     db = db.getSiblingDB(dbname);
 
     let results = {};
+
+    db.users.find ({ friends: { $exists: true, $ne: [] }}).forEach(function(user) {
+        let oldest = null;
+        user.friends.forEach(function(id) {
+            let myFriend = db.users.findOne({ user_id: id});
+
+            if(!myFriend) return;
+
+            if(oldest === null || myFriend.YOB < oldest.YOB || 
+                (myFriend.YOB === oldest.YOB && myFriend.user_id < oldest.user_id)) {
+                    oldest = myFriend;
+            }
+        });
+        
+        if (oldest != null) {
+            results[user.user_id] = oldest.user_id;
+        }
+    });
     // TODO: implement oldest friends
 
     return results;
