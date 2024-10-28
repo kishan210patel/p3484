@@ -45,9 +45,102 @@ public class GetData {
         JSONArray users_info = new JSONArray();
         
         try (Statement stmt = oracleConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
-            // Your implementation goes here....
+            ResultSet rst = stmt.executeQuery(
+                    "SELECT user_id, first_name, last_name, gender, year_of_birth, month_of_birth, day_of_birth " +
+                            "FROM " + userTableName); 
+            while(rst.next()){
+                int userId = rsUsers.getInt(1);
+                String firstName = rsUsers.getString(2);
+                String lastName = rsUsers.getString(3);
+                String gender = rsUsers.getString(4);
+                int yob = rsUsers.getInt(5);
+                int mob = rsUsers.getInt(6);
+                int dob = rsUsers.getInt(7);
+
+                JSONObject dude = new JSONObject();
+                dude.put("user_id", userId);
+                dude.put("first_name", firstName);
+                dude.put("last_name", lastName);
+                dude.put("gender", gender);
+                dude.put("YOB", yob);
+                dude.put("MOB", mob);
+                dude.put("DOB", dob);
+
+                Statement stmt2 = oracleConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                ResultSet rst2 = stmt2.executeQuery(
+                    "SELECT c.city_name, c.state_name, c.country_name " +
+                    "FROM " + cityTableName +  " c " + 
+                    "JOIN " + currentCityTableName +  " c1 ON c1.current_city_id = c.city_id " +
+                    "JOIN " + userTableName + " u ON u.user_id = " + userId
+                );
+                
+                JSONObject currCity = new JSONObject();
+                
+                if(rst2.next()){
+                    currCity.put("country", rst2.getString(3));
+                    currCity.put("city", rst2.getString(1));
+                    currCity.put("state", rst2.getString(2));
+                }
+                dude.put("current", currCity);
+
+                Statement stmt3 = oracleConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                ResultSet rst3 = stmt3.executeQuery(
+                    "SELECT c.city_name, c.state_name, c.country_name " +
+                    "FROM " + cityTableName +  " c " + 
+                    "JOIN " + hometownCityTableName +  " c1 ON c1.hometown_city_id = c.city_id " +
+                    "JOIN " + userTableName + " u ON u.user_id = " + userId
+                );
+                JSONObject hometown = new JSONObject();
+                if(rst3.next()){
+                    hometown.put("country", rst3.getString(3));
+                    hometown.put("city", rst3.getString(1));
+                    hometown.put("state", rst3.getString(2));
+
+                }
+                dude.put("hometown", hometown);
+
+                Statement stmt4 = oracleConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                ResultSet rst4 = stmt4.executeQuery(
+                    "SELECT f1.user2_id " +
+                    "FROM " + friendsTableName +  " f1 " + 
+                    "WHERE  f1.user1_id = " + userId + " " +
+                    "AND f1.user2_id > " + userId + " " + 
+                    "UNION " +        
+                    
+                    "SELECT f2.user1_id " +
+                    "FROM " + friendsTableName +  " f2 " + 
+                    "WHERE  f2.user2_id = " + userId + " " +
+                    "AND f2.user1_id > " + userId
+                );
+                JSONArray friends = new JSONArray();
+                while(rst4.next()){
+                    friends.put(rst4.getInt(1));
+                }
+                dude.put("friends", friends);
+                users_info.put(dude);
+
+
+
+                rst2.close();
+                rst3.close();
+                rst4.close();
+
+                stmt2.close();
+                stmt3.close();
+                stmt4.close();
+
+
+
+
+
+
+
+
+            }
+
+
             
-            
+            rst.close();
             stmt.close();
         } catch (SQLException e) {
             System.err.println(e.getMessage());
