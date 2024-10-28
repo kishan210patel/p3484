@@ -10,6 +10,12 @@ function unwind_friends(dbname) {
     db = db.getSiblingDB(dbname);
 
     // TODO: unwind friends
-
-    return;
+    db.users.find().forEach(function(user) {
+        user.friends.forEach(function(id) {
+            db.flat_users.insert ({
+                user_id: user.user_id,
+                friends: id
+            });
+        });
+    });
 }

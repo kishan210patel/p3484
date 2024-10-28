@@ -49,13 +49,13 @@ public class GetData {
                     "SELECT user_id, first_name, last_name, gender, year_of_birth, month_of_birth, day_of_birth " +
                             "FROM " + userTableName); 
             while(rst.next()){
-                int userId = rsUsers.getInt(1);
-                String firstName = rsUsers.getString(2);
-                String lastName = rsUsers.getString(3);
-                String gender = rsUsers.getString(4);
-                int yob = rsUsers.getInt(5);
-                int mob = rsUsers.getInt(6);
-                int dob = rsUsers.getInt(7);
+                int userId = rst.getInt(1);
+                String firstName = rst.getString(2);
+                String lastName = rst.getString(3);
+                String gender = rst.getString(4);
+                int yob = rst.getInt(5);
+                int mob = rst.getInt(6);
+                int dob = rst.getInt(7);
 
                 JSONObject dude = new JSONObject();
                 dude.put("user_id", userId);
@@ -104,14 +104,9 @@ public class GetData {
                     "SELECT f1.user2_id " +
                     "FROM " + friendsTableName +  " f1 " + 
                     "WHERE  f1.user1_id = " + userId + " " +
-                    "AND f1.user2_id > " + userId + " " + 
-                    "UNION " +        
-                    
-                    "SELECT f2.user1_id " +
-                    "FROM " + friendsTableName +  " f2 " + 
-                    "WHERE  f2.user2_id = " + userId + " " +
-                    "AND f2.user1_id > " + userId
+                    "AND f1.user2_id > " + userId
                 );
+                
                 JSONArray friends = new JSONArray();
                 while(rst4.next()){
                     friends.put(rst4.getInt(1));

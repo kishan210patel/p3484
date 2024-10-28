@@ -10,6 +10,13 @@ function cities_table(dbname) {
     db = db.getSiblingDB(dbname);
 
     // TODO: implement cities collection here
+    db.users.aggregate ([
+        { $match: {"current.city": { $exists: true, $ne: "" } } },
+        { $group: {
+            _id: "$current.city",
+            users: {$addToSet: "$user_id" }
+        }},
 
-    return;
+        {$out: "cities" }
+    ]);
 }
