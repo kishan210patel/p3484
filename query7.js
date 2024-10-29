@@ -18,30 +18,39 @@
 
 
 function users_born_by_month(dbname) {
-	db.getSiblingDB(dbname); 
+  db.getSiblingDB(dbname); 
+  db.users.aggregate([
+    {
+      $addFields: {
+        MOB: { $month: "$MOB" }
+      }
+    },
 
-	db.users.aggregate([
     {
       $group: {
         _id: "$MOB",
-        numBorn: { $sum: 1 },
-      },
+        bornCount: { $sum : 1 }
+      }
     },
-
-    { $addFields: { MOB: "$_id" } },
-
+    {
+      $sort: {
+        _id: 1
+      }
+    },
     {
       $project: {
-        _id: { $toObjectId: { $concat: ["$MOB", "-", "countbymonth"]}},
-        borncount: 1,
-        MOB: 1,
-      }},
+        month: "$_id",
+        bornCount: 1,
+        _id: 0
+      }
+    },
+    {
+      $out: "countbymonth"
+    }
 
-    { $sort: { MOB: 1 } },
-
-    { $out: "countbymonth" },
   ]);
-	// Enter your solution below 
+
+	
 
 }
 
