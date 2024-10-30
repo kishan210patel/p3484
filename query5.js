@@ -8,28 +8,47 @@
 // {user1:userx1, user2:userx2, user3:userx3,...}
 
 function oldest_friend(dbname) {
-    db = db.getSiblingDB(dbname);
+  db = db.getSiblingDB(dbname);
 
-    let results = {};
+  let results = {};
 
-    db.users.find ({ friends: { $exists: true, $ne: [] }}).forEach(function(user) {
-        let oldest = null;
-        user.friends.forEach(function(id) {
-            let myFriend = db.users.findOne({ user_id: id});
+  // TODO: implement oldest friends
+  db.users.find().forEach(function (user) {
+    let min_id = 9999999;
+    let min_year = 99999;
+    let old = -1;
 
-            if(!myFriend) return;
-
-            if(oldest === null || myFriend.YOB < oldest.YOB || 
-                (myFriend.YOB === oldest.YOB && myFriend.user_id < oldest.user_id)) {
-                    oldest = myFriend;
-            }
+    if (user.friends) {
+      db.users
+        .find({ user_id: { $in: user.friends } })
+        .forEach(function (person) {
+          if (
+            person.YOB < min_year ||
+            (person.YOB === min_year && person.user_id < min_id)
+          ) {
+            old = person.user_id;
+            min_id = person.user_id;
+            min_year = person.YOB;
+          }
         });
-        
-        if (oldest != null) {
-            results[user.user_id] = oldest.user_id;
-        }
-    });
-    // TODO: implement oldest friends
+    }
 
-    return results;
+    db.users.find({ friends: user.user_id }).forEach(function(person) {
+      if (
+        person.YOB < min_year ||
+        (person.YOB === min_year && person.user_id < min_id)
+      ) {
+        old = person.user_id;
+        min_id = person.user_id;
+        min_year = person.YOB;
+      }
+    });
+
+    if (old !== -1) {
+      results[user.user_id] = old;
+    }
+
+  });
+  
+  return results;
 }

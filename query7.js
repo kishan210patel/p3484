@@ -23,7 +23,7 @@ function users_born_by_month(dbname) {
     {
       $group: {
         _id: "$MOB",
-        bornCount: { $sum : 1 }
+        borncount: { $sum : 1 }
       }
     },
     {
@@ -34,7 +34,7 @@ function users_born_by_month(dbname) {
     {
       $project: {
         MOB: "$_id",
-        bornCount: 1,
+        borncount: 1,
         _id: 0
       }
     },
